@@ -83,6 +83,7 @@ const passwordRules = [
   v => (v && v.length > 5) || 'Must be greater than 6 characters',
 ]
 export default {
+    middleware: 'isNotAuthenticated',
     layout: 'noheader',
     data () {
         return {
@@ -106,15 +107,20 @@ export default {
             this.$router.push({ path: '/admin/login' })
         },
         signUp () {
-            if (this.$ref.signUpForm.validate()) {
+            if (this.$refs.signUpForm.validate()) {
                 const userRegInfo = {
                     name: this.name,
                     username: this.username,
                     email: this.email,
-                    password: this.passowrd
+                    password: this.password
                 }
-
-
+                this.$store.dispatch('user/userSignUp', userRegInfo).then((res) => {
+                    if (res.status === 1) {
+                        this.$router.push('/')
+                    } else {
+                        alert('An Error Occurr')
+                    }
+                })
             }
         }
     }

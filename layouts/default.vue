@@ -16,8 +16,11 @@
                         ></v-img>
                     </v-avatar>
                 </v-list-item>
-                <v-list-item class="justify-center">
-                    <v-btn text>{{ userName }}</v-btn>
+                <v-list-item>
+                   <v-list-item-content>
+                        <v-list-item-title class="text-center">{{ userName }}</v-list-item-title>
+                        <v-list-item-subtitle class="text-center">{{ userLevel }}</v-list-item-subtitle>
+                   </v-list-item-content>
                 </v-list-item>
             </v-list>
             <v-divider></v-divider>
@@ -83,7 +86,7 @@ export default {
                 {
                     icon: "mdi-apps",
                     title: "Welcome",
-                    to: "/"
+                    to: "/admin"
                 }
             ],
             miniVariant: false,
@@ -98,6 +101,17 @@ export default {
         },
         userAvatar () {
             return this.Auth && this.Auth.avatar !== '' ? this.Auth.avatar : require('~/assets/avatar/avatar_8.jpg')
+        },
+        userLevel () {
+            if (this.Auth) {
+                const { role } = this.Auth
+                switch (role) {
+                    case 1: return 'Super Admin'
+                    case 0: return 'Member'
+                }
+            } else {
+                return 'You are guest!!!'
+            }
         }
     },
     methods: {

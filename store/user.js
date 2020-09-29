@@ -92,5 +92,22 @@ export const actions = {
                 err: 'Error Occurr'
             }
         }
+    },
+    async userSignUp ({ commit }, userRegInfo) {
+        try {
+            const resp = await this.$axios.$post('/api/user/signup', userRegInfo)
+            if (resp.status === 1) {
+                commit('SET_USER_INFO', resp.user)
+                commit('SET_USER_TOKEN', resp.token)
+                setCookie('token', resp.token)
+                return resp
+            }
+
+        } catch (err) {
+            return {
+                status: 0,
+                err: err.response.data.error
+            }
+        }
     }
 }

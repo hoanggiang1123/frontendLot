@@ -3,7 +3,7 @@
 </template>
 <script>
 export default {
-
+  middleware: 'requireAdmin'
 }
 </script>
 <style scoped>
