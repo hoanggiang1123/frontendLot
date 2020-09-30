@@ -109,5 +109,22 @@ export const actions = {
                 err: err.response.data.error
             }
         }
+    },
+    async getUserList({ commit }) {
+        try {
+            const resp = await this.$axios.$get('/api/user/list')
+            if (resp.status === 1) {
+                return resp
+            }
+            return {
+                status: 0,
+                err: 'Error Occur'
+            }
+        } catch (err) {
+            return {
+                status: 0,
+                err
+            }
+        }
     }
 }

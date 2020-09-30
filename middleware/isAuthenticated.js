@@ -1,5 +1,5 @@
 export default function ({ userAuth, redirect }) {
-    if (userAuth.isAuth === false) {
+    if (!userAuth.isAuth) {
         redirect('/')
     }
 }
