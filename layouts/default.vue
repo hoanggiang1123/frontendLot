@@ -1,5 +1,5 @@
 <template>
-    <v-app style="background-color: #e0e0e0">
+    <v-app style="background-color: #e0e0e0" class="myapp">
         <v-navigation-drawer
             v-model="drawer"
             :mini-variant="miniVariant"
@@ -25,23 +25,13 @@
             </v-list>
             <v-divider></v-divider>
             <v-list>
-                <v-list-item to="/admin">
+                <v-list-item v-for="item in menuItems" :key="item.text" :to="item.route" exact>
                     <v-list-item-action>
-                        <v-icon>mdi-view-dashboard</v-icon>
+                        <v-icon>{{ item.icon }}</v-icon>
                     </v-list-item-action>
                     <v-list-item-content>
                         <v-list-item-title>
-                            Dashboard
-                        </v-list-item-title>
-                    </v-list-item-content>
-                </v-list-item>
-                <v-list-item to="/admin/user">
-                    <v-list-item-action>
-                        <v-icon>mdi-account-supervisor-circle</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                        <v-list-item-title>
-                            User Management
+                            {{ item.text }}
                         </v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
@@ -49,7 +39,7 @@
         </v-navigation-drawer>
         <v-app-bar :clipped-left="clipped" fixed app color="primary">
             <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-            <v-btn icon @click.stop="miniVariant = !miniVariant">
+            <v-btn icon @click="$router.push({ path: backPath })">
                 <v-icon
                     >mdi-{{
                         `chevron-${miniVariant ? "right" : "left"}`
@@ -82,6 +72,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { removeCookie } from "@/helpers/auth";
+import { SERVER_URL } from '@/helpers/constant'
 export default {
     data() {
         return {
@@ -90,7 +81,13 @@ export default {
             fixed: false,
             miniVariant: false,
             right: true,
-            title: "VnLottery"
+            title: "VnLottery",
+            menuItems: [
+                { icon: 'mdi-view-dashboard', text: 'Dashboard', route: '/admin' },
+                { icon: 'mdi-account-supervisor-circle', text: 'User Management', route: '/admin/user' },
+            ],
+            SERVER_URL,
+            backPath: '/'
         };
     },
     computed: {
@@ -99,7 +96,7 @@ export default {
             return this.Auth && this.Auth.name !== '' ? this.Auth.name : 'Hello Friends'
         },
         userAvatar () {
-            return this.Auth && this.Auth.avatar !== '' ? this.Auth.avatar : require('~/assets/avatar/avatar_8.jpg')
+            return this.Auth && this.Auth.avatar !== '' ? SERVER_URL + this.Auth.avatar : require('~/assets/avatar/avatar_8.jpg')
         },
         userLevel () {
             if (this.Auth) {
@@ -111,6 +108,11 @@ export default {
             } else {
                 return 'You are guest!!!'
             }
+        }
+    },
+    watch: {
+        '$route' (to, from) {
+            this.backPath = from.path
         }
     },
     methods: {

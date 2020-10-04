@@ -2,11 +2,11 @@
     <v-container>
         <v-row>
             <v-col cols="12">
-                <v-card color="grey">
+                <v-card color="accent">
                     <v-card-title>
                         User Management
                         <v-spacer></v-spacer>
-                        <v-btn color="secondary">
+                        <v-btn color="secondary" absolute top right>
                             <v-icon left>mdi-plus-box</v-icon>
                             Create
                         </v-btn>
@@ -18,9 +18,12 @@
                             :items-per-page="10"
                             class="primary user-table"
                         >
+                             <template v-slot:[`item.name`]="{ value }">
+                                <v-list-item-title class="text-capitalize">{{ value }}</v-list-item-title>
+                            </template>
                             <template v-slot:[`item.avatar`]="{ item }">
                                 <v-avatar class="ma-2">
-                                    <v-img :src="item.avatar"></v-img>
+                                    <v-img :src="item.avatar ? SERVER_URL + item.avatar : require('~/assets/avatar/avatar_8.jpg')" lazy-src="https://blog.bdtt.tv/wp-content/uploads/2020/08/dot.jpg"></v-img>
                                 </v-avatar>
                             </template>
                             <template v-slot:[`item.role`]="{ value }">
@@ -33,12 +36,7 @@
                                 </v-btn>
                             </template>
                             <template v-slot:[`item.status`]="{ item }">
-                                <v-switch
-                                    :label="item.avatar !== '' ? 'Active' : 'InActive'"
-                                    :value="true"
-                                    color="orange"
-                                    class="m-switch"
-                                />
+                                <SwitchDisplay :item="item" @change-status="changeStatus"/>
                             </template>
                         </v-data-table>
                     </v-card-text>
@@ -49,9 +47,13 @@
 </template>
 <script>
 import RoleDisplay from '@/components/DataTable/RoleDisplay'
+import SwitchDisplay from '@/components/DataTable/SwitchDisplay'
+import { SERVER_URL } from '@/helpers/constant'
 export default {
+    middleware: 'requireAdmin',
     components: {
-        RoleDisplay
+        RoleDisplay,
+        SwitchDisplay
     },
     data: () => ({
         headers: [
@@ -61,13 +63,12 @@ export default {
             { text: 'Level', value: 'role', sortable: false },
             { text: 'Status', value: 'status', sortable: false },
             { text: 'Action', value: 'edit', sortable: false }
-        ]
+        ],
+        SERVER_URL
     }),
     async asyncData ({ store, $axios }) {
-        $axios.setToken(store.state.user.token, 'Bearer')
         const resp = await store.dispatch('user/getUserList')
         const users = resp.status === 1 ? resp.users : []
-
         return {
             users
         }
@@ -77,14 +78,28 @@ export default {
     },
     methods: {
         userEdit (id) {
-            alert(id)
+            this.$router.push({ path: `/admin/user/${id}` })
+        },
+        changeStatus (userObj) {
+            this.$store.dispatch('user/userChangeStatus', userObj).then((res) => {
+                if (res.status === 1) {
+                    this.$store.dispatch('user/getUserList').then((resp) => {
+                        if (resp.status === 1) {
+                            this.users = resp.users
+                        }
+                    })
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+            })
         }
     }
 }
 </script>
-<style>
-.theme--dark.v-data-table.user-table > .v-data-table__wrapper > table > tbody > tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper) {
-    background: #ff5252 !important;
+<style scoped>
+::v-deep .v-data-table__wrapper table tbody tr:hover {
+    background: #f34444   !important;
     cursor: pointer;
 }
 .m-switch.theme--dark.v-input--switch .v-input--switch__thumb {
@@ -92,5 +107,11 @@ export default {
 }
 .m-switch .theme--dark.v-label {
     color: orange;
+}
+.m-switch.switch-active.theme--dark.v-input--switch .v-input--switch__thumb {
+    color: #00e676 !important;
+}
+.m-switch.switch-active .theme--dark.v-label {
+    color: #00e676;
 }
 </style>

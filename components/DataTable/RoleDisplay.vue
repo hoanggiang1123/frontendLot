@@ -1,7 +1,7 @@
 <template>
-    <v-chip :color="roleColor" class="white--text text--darken-4" small>
+    <v-btn :color="roleColor" class="white--text text--darken-4" small elevation="5">
         {{ roleName }}
-    </v-chip>
+    </v-btn>
 </template>
 <script>
 export default {
