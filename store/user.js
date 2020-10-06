@@ -144,9 +144,9 @@ export const actions = {
             }
         }
     },
-    async getUserInfoById({ commit }, id) {
+    async getUserInfoById({ commit }, userId) {
         try {
-            const resp = await this.$axios.$get('/api/user/' + id)
+            const resp = await this.$axios.$get('/api/user/' + userId)
             if (resp.status === 1) {
                 return resp
             }
@@ -181,7 +181,24 @@ export const actions = {
     async userChangePassword({ commit }, userObj) {
         try {
             const resp = await this.$axios.$post('/api/user/change-password', userObj)
-            console.log(resp)
+            if (resp.status === 1) {
+                return resp
+            }
+            return {
+                status: 0,
+                err: 'An error occurr'
+            }
+        } catch (err) {
+            return {
+                status: 0,
+                err: err.response.data.error
+            }
+        }
+    },
+
+    async userChangeStatusAndRole({ commit }, userObj) {
+        try {
+            const resp = await this.$axios.$post('/api/user/change-role-status', userObj)
             if (resp.status === 1) {
                 return resp
             }

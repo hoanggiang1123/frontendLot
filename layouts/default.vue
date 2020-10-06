@@ -8,21 +8,19 @@
             app
             color="accent"
         >
-            <v-list class="my-4">
-                <v-list-item class="justify-center">
-                    <v-avatar size="100">
-                        <v-img
-                            :src="userAvatar"
-                        ></v-img>
+            <v-layout column align-center justify-center>
+                <v-flex class="mt-4">
+                    <v-avatar size="100" color="success">
+                        <v-img :src="userAvatar"></v-img>
                     </v-avatar>
-                </v-list-item>
-                <v-list-item>
-                   <v-list-item-content>
-                        <v-list-item-title class="text-center">{{ userName }}</v-list-item-title>
-                        <v-list-item-subtitle class="text-center">{{ userLevel }}</v-list-item-subtitle>
-                   </v-list-item-content>
-                </v-list-item>
-            </v-list>
+                </v-flex>
+                <v-flex class="my-2">
+                    <v-btn color="secondary" small @click="goToProfile">{{ userName }}</v-btn>
+                </v-flex>
+                 <v-flex>
+                    <p class="white--text text-center subheading">{{ userLevel }}</p>
+                </v-flex>
+            </v-layout>
             <v-divider></v-divider>
             <v-list>
                 <v-list-item v-for="item in menuItems" :key="item.text" :to="item.route" exact>
@@ -125,6 +123,11 @@ export default {
         },
         logIn () {
             this.$router.push({ path: '/admin/login' })
+        },
+        goToProfile () {
+            if (this.Auth) {
+                this.$router.push({ path: `/admin/user/${this.Auth._id}` })
+            }
         }
     }
 };

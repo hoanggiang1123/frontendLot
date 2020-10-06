@@ -103,7 +103,7 @@
                             </v-list-item>
                             <v-card-text>
                                 <v-form
-                                    ref="changePassForm"                        
+                                    ref="changePassForm"
                                     v-model="valid"
                                 >
                                     <v-text-field
@@ -127,7 +127,7 @@
                             </v-card-text>
                         </v-card>
                     </v-col>
-                    <v-col cols="12">
+                    <v-col v-if="Auth && Auth.role === 1" cols="12">
                         <v-card color="primary">
                             <v-list-item>
                                 <v-list-item-icon>
@@ -138,9 +138,7 @@
                                 </v-list-item-title>
                             </v-list-item>
                             <v-card-text>
-                                <v-form
-                                    
-                                >
+                                <v-form>
                                     <v-select
                                         v-model="roleValues"
                                         :items="roles"
@@ -168,6 +166,7 @@
     </v-container>
 </template>
 <script>
+import { mapGetters } from 'vuex'
 import { SERVER_URL } from '@/helpers/constant'
 
 const passwordRules = [
@@ -176,18 +175,18 @@ const passwordRules = [
 ];
 export default {
     async asyncData ({ store, params, redirect }) {
-        const id = params.id
-        const userProfile = await store.dispatch('user/getUserInfoById', id)
+        const userId = params.id
+        const userProfile = await store.dispatch('user/getUserInfoById', userId)
         if (userProfile.status === 1) {
-            const roleValues = userProfile.user.role === 0 ? { name: 'Member', val: 0 } : { name: 'Admin', val: 1 }
-            const statusValues = userProfile.user.status === 'active' ? { name: 'Active', val: 'active' } : { name: 'Inactive', val: 'inactive' }
+            const roleValues = userProfile.user.role === 0 ?  0 : 1
+            const statusValues = userProfile.user.status === 'active' ? 'active' : 'inactive'
             return {
                 userProfile: userProfile.user,
                 roleValues,
                 statusValues
             }
         } else {
-            redirect(404, '/error')
+            return redirect('/error')
         }
     },
     data: () => ({
@@ -208,6 +207,7 @@ export default {
         SERVER_URL
     }),
     computed: {
+        ...mapGetters('user', ['Auth']),
         verifyPassword () {
             return [
                 v => !!v || "Password is required",
@@ -234,7 +234,7 @@ export default {
             }
         },
         handleAvatarChange () {
-        
+
             const reader = new FileReader()
             reader.addEventListener('load', () => {
                 this.userProfile.avatar = reader.result
@@ -245,8 +245,14 @@ export default {
             }
         },
         handleRoleAndStatus () {
-            console.log(this.roleValues)
-            console.log(this.statusValues)
+            const userObj = { userId: this.userProfile._id, role: this.roleValues, status: this.statusValues }
+            this.$store.dispatch('user/userChangeStatusAndRole', userObj).then((res) => {
+                if (res.status === 1) {
+                    this.roleValues = res.user.role
+                    this.statusValues = res.user.status
+                    alert('Change role & status successful!!!')
+                }
+            })
         },
         handleChangeUserInfo () {
             const name = this.userProfile.name
@@ -261,7 +267,7 @@ export default {
             }
 
             let formData = new FormData()
-            formData.append('userId', id)
+            formData.append('id', id)
             formData.append('name', name)
             formData.append('phone', phone)
             formData.append('about', about)
@@ -277,7 +283,7 @@ export default {
         },
         changePassword () {
             if(this.$refs.changePassForm.validate()) {
-                const userObj = { userId: this.userProfile._id, password: this.password, newPassword: this.newPassword }
+                const userObj = { id: this.userProfile._id, password: this.password, newPassword: this.newPassword }
                 this.$store.dispatch('user/userChangePassword', userObj)
                     .then((res) => {
                         if (res.status === 1) {
